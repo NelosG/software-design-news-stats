@@ -5,9 +5,9 @@ import com.google.inject.name.Names
 import ru.ifmo.pga.software.design.news.module.stats.provider.VkStatisticsProvider
 import ru.ifmo.pga.software.design.news.module.stats.provider.impl.VkStatisticsProviderImpl
 
-class VkStatisticsModule: AbstractModule() {
-    
-    
+class VkStatisticsModule : AbstractModule() {
+
+
     override fun configure() {
         bind(VkStatisticsProvider::class.java).to(VkStatisticsProviderImpl::class.java)
 

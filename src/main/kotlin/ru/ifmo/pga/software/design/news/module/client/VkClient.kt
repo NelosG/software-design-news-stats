@@ -26,7 +26,7 @@ abstract class VkClient(
         val request = HttpRequest.newBuilder(
             getUri(params)
         ).GET().build()
-        
+
         val response: HttpResponse<String> = try {
             client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
         } catch (e: InterruptedException) {

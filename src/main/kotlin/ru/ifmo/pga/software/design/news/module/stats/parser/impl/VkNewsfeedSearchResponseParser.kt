@@ -9,7 +9,7 @@ import ru.ifmo.pga.software.design.news.module.stats.response.impl.VkNewsfeedSea
 import java.util.*
 
 class VkNewsfeedSearchResponseParser : VkResponseParser<VkNewsfeedSearchResponse> {
-    
+
     override fun parse(apiResponse: String): VkNewsfeedSearchResponse {
         val rootJsonElement = JsonParser.parseString(apiResponse)
         val rootJsonObject = rootJsonElement.asJsonObject

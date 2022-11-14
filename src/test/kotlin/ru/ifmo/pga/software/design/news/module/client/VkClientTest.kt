@@ -7,7 +7,7 @@ import com.xebialabs.restito.semantics.Condition
 import com.xebialabs.restito.server.StubServer
 import org.glassfish.grizzly.http.Method
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,17 +15,16 @@ import ru.ifmo.pga.software.design.news.module.client.exception.VkClientExceptio
 import java.util.*
 
 class VkClientTest {
-    private var stubServer: StubServer? = null
+    private lateinit var stubServer: StubServer
 
     @BeforeEach
-    fun createStubServer() {
+    fun createServer() {
         stubServer = StubServer(PORT).run()
     }
 
     @AfterEach
-    fun shutdownStubServer() {
-        stubServer!!.stop()
-        stubServer = null
+    fun shutdownServer() {
+        stubServer.stop()
     }
 
     @Test
@@ -33,30 +32,35 @@ class VkClientTest {
         StubHttp.whenHttp(stubServer)
             .match(Condition.method(Method.GET), Condition.startsWithUri("/method/"))
             .then(Action.stringContent("OK"))
-        val client: VkClient = TestVkClient("user.info", "abacaba")
+
+        val client: VkClient = TestVkClient("user.info", ACCESS_TOKEN)
         val result = client.fetch(mapOf())
         assertEquals("OK", result)
     }
 
     @Test
     fun params() {
+        val query = "query"
+        val startTime = "1666547983"
+        val endTime = "1666548000"
+
         StubHttp.whenHttp(stubServer)
             .match(
                 Condition.method(Method.GET),
                 Condition.startsWithUri("/method/"),
-                Condition.parameter("q", "query"),
-                Condition.parameter("start_time", "1666547983"),
-                Condition.parameter("end_time", "1666548000"),
-                Condition.parameter("access_token", "abacaba"),
-                Condition.parameter("v", "5.131"),
+                Condition.parameter("q", query),
+                Condition.parameter("start_time", startTime),
+                Condition.parameter("end_time", endTime),
+                Condition.parameter("access_token", ACCESS_TOKEN),
+                Condition.parameter("v", VkClient.API_VERSION),
                 Condition.custom { call: Call -> call.parameters.size == 5 }
             ).then(Action.stringContent("OK"))
         val client: VkClient = TestVkClient("newsfeed.search", "abacaba")
         val result = client.fetch(
             mapOf(
-                "q" to "query",
-                "start_time" to "1666547983",
-                "end_time" to "1666548000"
+                "q" to query,
+                "start_time" to startTime,
+                "end_time" to endTime
             )
         )
         assertEquals("OK", result)
@@ -65,7 +69,7 @@ class VkClientTest {
     @Test
     fun httpNot200() {
         StubHttp.whenHttp(stubServer).match(Condition.alwaysFalse()).then()
-        val client: VkClient = TestVkClient("user.info", "abacaba")
+        val client: VkClient = TestVkClient("user.info", ACCESS_TOKEN)
 
         assertThrows<VkClientException> {
             client.fetch(mapOf())
@@ -80,10 +84,11 @@ class VkClientTest {
         }
     }
 
-    private class TestVkClient(method: String?, accessToken: String?) :
-        VkClient(false, "localhost", PORT, method!!, accessToken!!)
+    private class TestVkClient(method: String, accessToken: String) :
+        VkClient(false, "localhost", PORT, method, accessToken)
 
     companion object {
         private val PORT = Random().nextInt(20000, 65535)
+        private const val ACCESS_TOKEN = "abacaba"
     }
 }

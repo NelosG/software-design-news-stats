@@ -1,7 +1,7 @@
 package ru.ifmo.pga.software.design.news.module.stats.response.impl
 
 import ru.ifmo.pga.software.design.news.module.stats.response.VkResponse
-import java.util.Optional
+import java.util.*
 
 data class VkNewsfeedSearchResponse(
     val count: Int,

@@ -12,22 +12,22 @@ class VkStatisticsProviderImpl @Inject constructor(
     private val client: VkNewsfeedSearchClient,
     private val parser: VkNewsfeedSearchResponseParser
 ) : VkStatisticsProvider {
-    
+
     override fun getPostsByHashtagForLastHours(hashtag: String, startInstant: Instant, hours: Int): LongArray {
         Validate.inclusiveBetween(1, 24, hours.toLong())
-        
-        val hashtagCorrected = if(hashtag[0] != '#') {
+
+        val hashtagCorrected = if (hashtag[0] != '#') {
             "#$hashtag"
         } else hashtag
-        
+
         val result = LongArray(hours)
         var toInstant = startInstant
-        
+
         for (i in 0 until hours) {
             val toInstantMinusHour = toInstant.minus(Duration.ofHours(1))
             result[i] = getPostsCountWithHashtagBetween(
                 hashtagCorrected,
-                toInstantMinusHour.epochSecond, 
+                toInstantMinusHour.epochSecond,
                 toInstant.epochSecond
             )
             toInstant = toInstantMinusHour

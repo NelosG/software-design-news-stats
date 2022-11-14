@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 import ru.ifmo.pga.software.design.news.module.client.search.VkNewsfeedSearchClient
 import ru.ifmo.pga.software.design.news.module.stats.parser.impl.VkNewsfeedSearchResponseParser
@@ -15,12 +15,12 @@ import java.util.*
 @ExtendWith(MockitoExtension::class)
 class VkStatisticsProviderImplTest {
     @Mock
-    val vkNewsfeedSearchClient: VkNewsfeedSearchClient? = null
+    private lateinit var vkNewsfeedSearchClient: VkNewsfeedSearchClient
 
     @Test
     fun simple() {
         `when`(
-            vkNewsfeedSearchClient!!.fetch(
+            vkNewsfeedSearchClient.fetch(
                 "#test",
                 CUR_TIME_SEC - HOUR_IN_SECONDS,
                 CUR_TIME_SEC
@@ -31,13 +31,20 @@ class VkStatisticsProviderImplTest {
             VkStatisticsProviderImpl(vkNewsfeedSearchClient, VkNewsfeedSearchResponseParser())
 
         val statistics = provider.getPostsByHashtagForLastHours("test", CUR_TIME, 1)
+
+        verify(vkNewsfeedSearchClient, times(1)).fetch(
+            "#test",
+            CUR_TIME_SEC - HOUR_IN_SECONDS,
+            CUR_TIME_SEC
+        )
+
         assertEquals(5, statistics[0])
     }
 
     @Test
     fun manyHours() {
         `when`(
-            vkNewsfeedSearchClient!!.fetch(
+            vkNewsfeedSearchClient.fetch(
                 "#test",
                 CUR_TIME_SEC - HOUR_IN_SECONDS,
                 CUR_TIME_SEC
@@ -63,6 +70,8 @@ class VkStatisticsProviderImplTest {
         val provider: VkStatisticsProvider =
             VkStatisticsProviderImpl(vkNewsfeedSearchClient, VkNewsfeedSearchResponseParser())
         val statistics = provider.getPostsByHashtagForLastHours("test", CUR_TIME, 3)
+
+        verify(vkNewsfeedSearchClient, times(3)).fetch(anyString(), anyLong(), anyLong())
 
         assertEquals(5, statistics[0])
         assertEquals(8, statistics[1])

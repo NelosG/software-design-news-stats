@@ -11,7 +11,7 @@ import com.xebialabs.restito.semantics.Condition
 import com.xebialabs.restito.server.StubServer
 import org.glassfish.grizzly.http.Method
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +21,7 @@ import ru.ifmo.pga.software.design.news.module.stats.provider.impl.VkStatisticsP
 import java.util.*
 
 class VkNewsfeedSearchClientTest {
-    private var stubServer: StubServer? = null
+    private lateinit var stubServer: StubServer
 
     @BeforeEach
     fun createServer() {
@@ -30,37 +30,41 @@ class VkNewsfeedSearchClientTest {
 
     @AfterEach
     fun shutdownServer() {
-        stubServer?.stop()
-        stubServer = null
+        stubServer.stop()
     }
 
     @Test
     fun simple() {
         val query = "query"
+        val startTime = 1666547983L
+        val endTime = 1666548000L
+
         StubHttp.whenHttp(stubServer)
             .match(
                 Condition.method(Method.GET),
                 Condition.startsWithUri("/method/"),
                 Condition.parameter("q", query),
-                Condition.parameter("start_time", "1666547983"),
-                Condition.parameter("end_time", "1666548000"),
+                Condition.parameter("start_time", startTime.toString()),
+                Condition.parameter("end_time", endTime.toString()),
                 Condition.parameter("access_token", ACCESS_TOKEN),
                 Condition.parameter("v", VkClient.API_VERSION),
                 Condition.custom { call: Call -> call.parameters.size == 5 }
             ).then(Action.stringContent("OK"))
+
         val client = injector!!.getInstance(
             VkNewsfeedSearchClient::class.java
         )
-        val response = client.fetch(query, 1666547983, 1666548000)
+        val response = client.fetch(query, startTime, endTime)
         assertEquals("OK", response)
     }
 
     class VkNewsfeedSearchClientTestModule : AbstractModule() {
         override fun configure() {
             bind(VkStatisticsProvider::class.java).to(VkStatisticsProviderImpl::class.java)
-            bind(Boolean::class.javaPrimitiveType).annotatedWith(Names.named("vkSecure")).toInstance(false)
+
+            bind(Boolean::class.java).annotatedWith(Names.named("vkSecure")).toInstance(false)
             bind(String::class.java).annotatedWith(Names.named("vkHost")).toInstance("localhost")
-            bind(Int::class.javaPrimitiveType).annotatedWith(Names.named("vkPort")).toInstance(PORT)
+            bind(Int::class.java).annotatedWith(Names.named("vkPort")).toInstance(PORT)
             bind(String::class.java).annotatedWith(Names.named("vkAccessToken")).toInstance(ACCESS_TOKEN)
         }
     }
