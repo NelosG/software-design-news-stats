@@ -51,7 +51,7 @@ class VkNewsfeedSearchClientTest {
                 Condition.custom { call: Call -> call.parameters.size == 5 }
             ).then(Action.stringContent("OK"))
 
-        val client = injector!!.getInstance(
+        val client = injector.getInstance(
             VkNewsfeedSearchClient::class.java
         )
         val response = client.fetch(query, startTime, endTime)
@@ -72,7 +72,7 @@ class VkNewsfeedSearchClientTest {
     companion object {
         private val PORT = Random().nextInt(20000, 65535)
         private const val ACCESS_TOKEN = "abacaba"
-        private var injector: Injector? = null
+        private lateinit var injector: Injector
 
         @JvmStatic
         @BeforeAll
