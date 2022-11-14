@@ -1,1 +1,1 @@
-# software-design-refactoring-twits
+# software-design-news-stats
